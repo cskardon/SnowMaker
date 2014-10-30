@@ -7,8 +7,8 @@ namespace SnowMaker
 {
     public class UniqueIdGenerator : IUniqueIdGenerator
     {
-        readonly IOptimisticDataStore optimisticDataStore;
-
+	    readonly IOptimisticDataStore optimisticDataStore;
+		
         readonly IDictionary<string, ScopeState> states = new Dictionary<string, ScopeState>();
         readonly object statesLock = new object();
 
@@ -59,13 +59,13 @@ namespace SnowMaker
                 () => new ScopeState());
         }
 
-        void UpdateFromSyncStore(string scopeName, ScopeState state)
+	    void UpdateFromSyncStore(string scopeName, ScopeState state)
         {
             var writesAttempted = 0;
 
             while (writesAttempted < maxWriteAttempts)
             {
-                var data = optimisticDataStore.GetData(scopeName);
+                var data = GetData(scopeName);
 
                 long nextId;
                 if (!long.TryParse(data, out nextId))
@@ -78,7 +78,7 @@ namespace SnowMaker
                 state.HighestIdAvailableInBatch = nextId - 1 + batchSize;
                 var firstIdInNextBatch = state.HighestIdAvailableInBatch + 1;
 
-                if (optimisticDataStore.TryOptimisticWrite(scopeName, firstIdInNextBatch.ToString(CultureInfo.InvariantCulture)))
+                if (TryOptimisticWrite(scopeName, firstIdInNextBatch.ToString(CultureInfo.InvariantCulture)))
                     return;
 
                 writesAttempted++;
@@ -88,5 +88,15 @@ namespace SnowMaker
                 "Failed to update the data store after {0} attempts. This likely represents too much contention against the store. Increase the batch size to a value more appropriate to your generation load.",
                 writesAttempted));
         }
+
+	    string GetData(string scopeName)
+	    {
+			return optimisticDataStore.GetData(scopeName);
+	    }
+
+	    bool TryOptimisticWrite(string scopeName, string data)
+	    {
+			return optimisticDataStore.TryOptimisticWrite(scopeName, data);
+	    }
     }
 }
