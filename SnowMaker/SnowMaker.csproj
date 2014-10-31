@@ -74,6 +74,7 @@
     <Compile Include="BlobOptimisticDataStore.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BlobOptimisticDataStoreAsync.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="DebugOnlyFileDataStore.cs" />
     <Compile Include="IOptimisticDataStore.cs">
